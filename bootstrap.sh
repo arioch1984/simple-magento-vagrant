@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 SAMPLE_DATA=$1
-MAGE_VERSION="1.9.1.0"
-DATA_VERSION="1.9.0.0"
+MAGE_VERSION="1.9.2.3"
+DATA_VERSION="1.9.1.0"
 
 # Update Apt
 # --------------------
@@ -14,6 +14,7 @@ apt-get install -y apache2
 apt-get install -y php5
 apt-get install -y libapache2-mod-php5
 apt-get install -y php5-mysqlnd php5-curl php5-xdebug php5-gd php5-intl php-pear php5-imap php5-mcrypt php5-ming php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl php-soap
+apt-get install -y unzip
 
 php5enmod mcrypt
 
@@ -69,13 +70,15 @@ mysql -u root -e "FLUSH PRIVILEGES"
 # Download and extract
 if [[ ! -f "/vagrant/httpdocs/index.php" ]]; then
   cd /vagrant/httpdocs
-  wget http://www.magentocommerce.com/downloads/assets/${MAGE_VERSION}/magento-${MAGE_VERSION}.tar.gz
-  tar -zxvf magento-${MAGE_VERSION}.tar.gz
-  mv magento/* magento/.htaccess .
+  #wget http://www.magentocommerce.com/downloads/assets/${MAGE_VERSION}/magento-${MAGE_VERSION}.tar.gz
+  wget https://github.com/bragento/magento-core/archive/${MAGE_VERSION}.zip
+  #tar -zxvf magento-${MAGE_VERSION}.tar.gz
+  unzip ${MAGE_VERSION}.zip
+  mv magento-core-${MAGE_VERSION}/* magento-core-${MAGE_VERSION}/.htaccess .
   chmod -R o+w media var
   chmod o+w app/etc
   # Clean up downloaded file and extracted dir
-  rm -rf magento*
+  rm -rf magento-core-${MAGE_VERSION}*
 fi
 
 
@@ -83,12 +86,14 @@ fi
 if [[ $SAMPLE_DATA == "true" ]]; then
   cd /vagrant
 
-  if [[ ! -f "/vagrant/magento-sample-data-${DATA_VERSION}.tar.gz" ]]; then
+  if [[ ! -f "/vagrant/compressed-no-mp3-magento-sample-data-${DATA_VERSION}.tgz" ]]; then
     # Only download sample data if we need to
-    wget http://www.magentocommerce.com/downloads/assets/${DATA_VERSION}/magento-sample-data-${DATA_VERSION}.tar.gz
+    #wget http://www.magentocommerce.com/downloads/assets/${DATA_VERSION}/magento-sample-data-${DATA_VERSION}.tar.gz
+    wget https://github.com/Vinai/compressed-magento-sample-data/raw/master/compressed-no-mp3-magento-sample-data-${DATA_VERSION}.tgz
   fi
 
-  tar -zxvf magento-sample-data-${DATA_VERSION}.tar.gz
+  #tar -zxvf magento-sample-data-${DATA_VERSION}.tar.gz
+  tar -zxvf compressed-no-mp3-magento-sample-data-${DATA_VERSION}.tgz
   cp -R magento-sample-data-${DATA_VERSION}/media/* httpdocs/media/
   cp -R magento-sample-data-${DATA_VERSION}/skin/*  httpdocs/skin/
   mysql -u root magentodb < magento-sample-data-${DATA_VERSION}/magento_sample_data_for_${DATA_VERSION}.sql
